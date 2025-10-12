@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rwanda CV Builder</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --background: #f0f4f8;
+            --foreground: #0a0a0a;
+            --card: #ffffff;
+            --card-foreground: #0a0a0a;
+            --primary: #030213;
+            --primary-foreground: #ffffff;
+            --secondary: #f3f3f5;
+            --secondary-foreground: #030213;
+            --muted: #ececf0;
+            --muted-foreground: #717182;
+            --accent: #e9ebef;
+            --accent-foreground: #030213;
+            --destructive: #d4183d;
+            --destructive-foreground: #ffffff;
+            --border: rgba(0, 0, 0, 0.1);
+            --input-background: #f3f3f5;
+            --radius: 0.625rem;
+        }
+
+        .dark {
+            --background: #0a0a0a;
+            --foreground: #fafafa;
+            --card: #0a0a0a;
+            --card-foreground: #fafafa;
+            --primary: #fafafa;
+            --primary-foreground: #1a1a1a;
+            --secondary: #1f1f1f;
+            --secondary-foreground: #fafafa;
+            --muted: #1f1f1f;
+            --muted-foreground: #a1a1aa;
+            --accent: #1f1f1f;
+            --accent-foreground: #fafafa;
+            --destructive: #7f1d1d;
+            --destructive-foreground: #fecaca;
+            --border: #1f1f1f;
+            --input-background: #1f1f1f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        h1 { font-size: 1.875rem; font-weight: 600; }
+        h2 { font-size: 1.5rem; font-weight: 600; }
+        h3 { font-size: 1.25rem; font-weight: 600; }
+        h4 { font-size: 1.125rem; font-weight: 500; }
+        p { font-size: 1rem; font-weight: 400; }
+        label { font-size: 0.875rem; font-weight: 500; }
+        button { font-size: 1rem; font-weight: 500; cursor: pointer; }
+        input, textarea, select { font-size: 1rem; font-weight: 400; }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            width: 100%;
+            border-bottom: 1px solid var(--border);
+            background-color: rgba(240, 244, 248, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark .header {
+            background-color: rgba(10, 10, 10, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            height: 5rem;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            height: 4rem;
+            width: auto;
+            object-fit: contain;
+            transform: perspective(200px) rotateY(-5deg);
+            transform-style: preserve-3d;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent);
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--foreground);
+        }
+
+        .btn-ghost:hover {
+            background-color: var(--accent);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(to right, #00A1DE, #FAD201, #00A651);
+            color: white;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+        }
+
+        /* Card */
+        .card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Input */
+        .input, .textarea, .select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: calc(var(--radius) - 2px);
+            border: 1px solid var(--border);
+            background-color: var(--input-background);
+            color: var(--foreground);
+            transition: all 0.2s;
+        }
+
+        .input:focus, .textarea:focus, .select:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Checkbox */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form sections */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .border-blue { border-left: 4px solid #00A1DE; }
+        .border-yellow { border-left: 4px solid #FAD201; }
+        .border-green { border-left: 4px solid #00A651; }
+
+        .text-blue { color: #00A1DE; }
+        .text-yellow { color: #d4a017; }
+        .text-green { color: #00A651; }
+
+        /* Skill/Hobby tags */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+
+        .tag-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .tag-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        /* Item box */
+        .item-box {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: rgba(0, 0, 0, 0.02);
+            margin-bottom: 1rem;
+        }
+
+        .dark .item-box {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            max-width: 80rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        /* Background animations */
+        .bg-container {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Utility classes */
+        .hidden { display: none; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .p-6 { padding: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-muted { color: var(--muted-foreground); }
+        .text-destructive { color: var(--destructive); }
+        .w-full { width: 100%; }
+        .max-w-4xl { max-width: 56rem; margin-left: auto; margin-right: auto; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-8 > * + * { margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion } = Motion;
+
+        // Translations
+        const translations = {
+            en: {
+                appTitle: 'Rwanda CV Builder',
+                appSubtitle: 'Build your professional resume with ease',
+                personalInfo: 'Personal Information',
+                fullName: 'Full Name',
+                email: 'Email Address',
+                phone: 'Phone Number',
+                address: 'Address',
+                dateOfBirth: 'Date of Birth',
+                nationality: 'Nationality',
+                summary: 'Professional Summary',
+                education: 'Education',
+                institution: 'Institution',
+                degree: 'Degree',
+                field: 'Field of Study',
+                startDate: 'Start Date',
+                endDate: 'End Date',
+                current: 'Currently Studying',
+                achievements: 'Key Achievements',
+                addEducation: 'Add Education',
+                workExperience: 'Work Experience',
+                company: 'Company',
+                position: 'Position',
+                location: 'Location',
+                currentlyWorking: 'Currently Working',
+                description: 'Job Description',
+                workAchievements: 'Key Achievements & Results',
+                addExperience: 'Add Work Experience',
+                skills: 'Skills',
+                skillPlaceholder: 'Enter a skill and press Enter',
+                addSkill: 'Add Skill',
+                languageProficiency: 'Language Proficiency',
+                languageName: 'Language',
+                proficiency: 'Proficiency Level',
+                addLanguage: 'Add Language',
+                certifications: 'Certifications & Training',
+                certificationName: 'Certification/Training Name',
+                issuer: 'Issued By',
+                certificationDate: 'Date Obtained',
+                certificationDescription: 'Description',
+                addCertification: 'Add Certification',
+                hobbies: 'Hobbies & Interests',
+                hobbyPlaceholder: 'Enter a hobby and press Enter',
+                addHobby: 'Add Hobby',
+                communityEngagement: 'Community Engagement & Volunteer Work',
+                communityPlaceholder: 'Describe your community involvement and volunteer activities',
+                references: 'References',
+                referenceName: 'Reference Name',
+                referencePosition: 'Position',
+                referenceCompany: 'Company/Organization',
+                referencePhone: 'Phone Number',
+                referenceEmail: 'Email Address',
+                addReference: 'Add Reference',
+                downloadPDF: 'Download PDF',
+                previewCV: 'Preview CV',
+                remove: 'Remove',
+                darkMode: 'Dark Mode',
+                lightMode: 'Light Mode',
+                language: 'Language',
+                optional: '(Optional)',
+            },
+            rw: {
+                appTitle: 'Rwanda CV Builder',
+                appSubtitle: 'Kora CV yawe yubahirije byoroshye',
+                personalInfo: 'Amakuru Yihariye',
+                fullName: 'Amazina Yombi',
+                email: 'Aderesi ya Email',
+                phone: 'Nimero ya Telefone',
+                address: 'Aho ubarizwa',
+                dateOfBirth: 'Itariki y\'amavuko',
+                nationality: 'Ubwenegihugu',
+                summary: 'Incamake y\'umwuga',
+                education: 'Amashuri',
+                institution: 'Ishuri',
+                degree: 'Impamyabumenyi',
+                field: 'Icyiciro cy\'amashuri',
+                startDate: 'Itariki yo gutangira',
+                endDate: 'Itariki yo kurangiza',
+                current: 'Niga none',
+                achievements: 'Ibyagezweho by\'ingenzi',
+                addEducation: 'Ongeraho Amashuri',
+                workExperience: 'Uburambe bw\'akazi',
+                company: 'Ikigo',
+                position: 'Umwanya',
+                location: 'Ahantu',
+                currentlyWorking: 'Nrakora none',
+                description: 'Ibisobanuro by\'akazi',
+                workAchievements: 'Ibyagezweho n\'ibisubizo',
+                addExperience: 'Ongeraho Uburambe',
+                skills: 'Ubumenyi',
+                skillPlaceholder: 'Andika ubumenyi hanyuma ukande Enter',
+                addSkill: 'Ongeraho Ubumenyi',
+                languageProficiency: 'Indimi',
+                languageName: 'Ururimi',
+                proficiency: 'Urwego rw\'ubumenyi',
+                addLanguage: 'Ongeraho Ururimi',
+                certifications: 'Impamyabushobozi n\'Amahugurwa',
+                certificationName: 'Izina ry\'impamyabushobozi',
+                issuer: 'Ryatanzwe na',
+                certificationDate: 'Itariki ryabonekeye',
+                certificationDescription: 'Ibisobanuro',
+                addCertification: 'Ongeraho Impamyabushobozi',
+                hobbies: 'Ibyishimisha n\'inyungu',
+                hobbyPlaceholder: 'Andika icyishimisha hanyuma ukande Enter',
+                addHobby: 'Ongeraho Icyishimisha',
+                communityEngagement: 'Imigendekere yo mu muryango n\'ubutabera',
+                communityPlaceholder: 'Sobanura uruhare rwawe mu muryango n\'ibikorwa by\'ubutabera',
+                references: 'Abashingikiriyeho',
+                referenceName: 'Amazina',
+                referencePosition: 'Umwanya',
+                referenceCompany: 'Ikigo/Umuryango',
+                referencePhone: 'Nimero ya Telefone',
+                referenceEmail: 'Aderesi ya Email',
+                addReference: 'Ongeraho Ushingikiriyeho',
+                downloadPDF: 'Pakurura PDF',
+                previewCV: 'Reba CV',
+                remove: 'Kuraho',
+                darkMode: 'Urumuri ruke',
+                lightMode: 'Urumuri nyinshi',
+                language: 'Ururimi',
+                optional: '(Ntabwo ari ngombwa)',
+            },
+        };
+
+        const getTranslation = (lang, key) => translations[lang][key] || key;
+
+        // Rwanda Background Component
+        const RwandaBackground = () => {
+            return React.createElement('div', { className: 'bg-container' },
+                // Animated hills
+                React.createElement(motion.div, {
+                    className: 'absolute bottom-0 left-0 right-0',
+                    style: { height: '16rem', opacity: 0.15 },
+                    initial: { y: 100, opacity: 0 },
+                    animate: { y: 0, opacity: 0.15 },
+                    transition: { duration: 2, ease: 'easeOut' }
+                },
+                    React.createElement('svg', { viewBox: '0 0 1200 300', className: 'w-full h-full', preserveAspectRatio: 'none' },
+                        React.createElement('path', {
+                            d: 'M0,150 Q150,80 300,120 T600,140 T900,100 T1200,130 L1200,300 L0,300 Z',
+                            fill: '#00A651'
+                        })
+                    )
+                ),
+                React.createElement(motion.div, {
+                    className: 'absolute bottom-0 left-0 right-0',
+                    style: { height: '12rem', opacity: 0.15 },
+                    initial: { y: 100, opacity: 0 },
+                    animate: { y: 0, opacity: 0.15 },
+                    transition: { duration: 2, delay: 0.3, ease: 'easeOut' }
+                },
+                    React.createElement('svg', { viewBox: '0 0 1200 300', className: 'w-full h-full', preserveAspectRatio: 'none' },
+                        React.createElement('path', {
+                            d: 'M0,180 Q200,100 400,140 T800,160 T1200,140 L1200,300 L0,300 Z',
+                            fill: '#00A1DE'
+                        })
+                    )
+                )
+            );
+        };
+
+        // Icon helper
+        const Icon = ({ name, size = 20 }) => {
+            const iconRef = React.useRef(null);
+            React.useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    const IconComponent = window.lucide[name];
+                    if (IconComponent) {
+                        lucide.createElement(IconComponent, { size });
+                        iconRef.current.innerHTML = '';
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        svg.setAttribute('width', size);
+                        svg.setAttribute('height', size);
+                        svg.setAttribute('viewBox', '0 0 24 24');
+                        svg.setAttribute('fill', 'none');
+                        svg.setAttribute('stroke', 'currentColor');
+                        svg.setAttribute('stroke-width', '2');
+                        svg.setAttribute('stroke-linecap', 'round');
+                        svg.setAttribute('stroke-linejoin', 'round');
+                        
+                        const iconData = {
+                            Moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+                            Sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+                            Globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+                            Plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+                            Trash2: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+                            Download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+                            Eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+                            Mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+                            Phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+                            MapPin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+                            Calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+                            Flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+                        };
+                        
+                        if (iconData[name]) {
+                            svg.innerHTML = iconData[name];
+                            iconRef.current.appendChild(svg);
+                        }
+                    }
+                }
+            }, [name, size]);
+            return React.createElement('span', { ref: iconRef, style: { display: 'inline-flex', alignItems: 'center' } });
+        };
+
+        // Main App Component
+        function App() {
+            const [theme, setTheme] = useState('light');
+            const [language, setLanguage] = useState('en');
+            const [showPreview, setShowPreview] = useState(false);
+            const [newSkill, setNewSkill] = useState('');
+            const [newHobby, setNewHobby] = useState('');
+            const [cvData, setCVData] = useState({
+                personalInfo: {
+                    fullName: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    dateOfBirth: '',
+                    nationality: '',
+                    summary: '',
+                },
+                education: [],
+                workExperience: [],
+                skills: [],
+                languages: [],
+                certifications: [],
+                hobbies: [],
+                communityEngagement: '',
+                references: [],
+            });
+
+            useEffect(() => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [theme]);
+
+            const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            const toggleLanguage = () => setLanguage(prev => prev === 'en' ? 'rw' : 'en');
+
+            const updatePersonalInfo = (field, value) => {
+                setCVData({
+                    ...cvData,
+                    personalInfo: { ...cvData.personalInfo, [field]: value },
+                });
+            };
+
+            const handleDownloadPDF = async () => {
+                const element = document.getElementById('cv-preview');
+                if (!element) return;
+
+                const wasHidden = !showPreview;
+                if (wasHidden) {
+                    setShowPreview(true);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 2,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                    });
+
+                    const imgWidth = 210;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= 297;
+
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= 297;
+                    }
+
+                    pdf.save(`${cvData.personalInfo.fullName || 'CV'}.pdf`);
+                } catch (error) {
+                    console.error('Error generating PDF:', error);
+                } finally {
+                    if (wasHidden) {
+                        setShowPreview(false);
+                    }
+                }
+            };
+
+            return React.createElement('div', { style: { minHeight: '100vh' } },
+                React.createElement(RwandaBackground),
+                
+                // Header
+                React.createElement('header', { className: 'header' },
+                    React.createElement('div', { className: 'header-content container' },
+                        React.createElement('div', { className: 'flex items-center gap-3' },
+                            React.createElement('img', {
+                                src: 'https://i.postimg.cc/6QKXBBhx/rwandacvbuilder.png',
+                                alt: 'Rwanda CV Builder',
+                                className: 'logo',
+                                onError: (e) => { e.target.style.display = 'none'; }
+                            })
+                        ),
+                        React.createElement('div', { className: 'header-actions' },
+                            React.createElement('button', {
+                                className: 'btn btn-ghost',
+                                onClick: toggleLanguage,
+                                title: getTranslation(language, 'language')
+                            },
+                                React.createElement(Icon, { name: 'Globe', size: 20 }),
+                                React.createElement('span', { className: 'ml-2 text-sm' }, language.toUpperCase())
+                            ),
+                            React.createElement('button', {
+                                className: 'btn btn-ghost',
+                                onClick: toggleTheme,
+                                title: theme === 'light' ? getTranslation(language, 'darkMode') : getTranslation(language, 'lightMode')
+                            },
+                                React.createElement(Icon, { name: theme === 'light' ? 'Moon' : 'Sun', size: 20 })
+                            )
+                        )
+                    )
+                ),
+
+                // Main content
+                React.createElement('main', { className: 'py-8' },
+                    React.createElement('div', { className: 'container max-w-4xl space-y-8' },
+                        // Personal Info
+                        React.createElement('div', { className: 'card border-blue' },
+                            React.createElement('h2', { className: 'text-blue mb-4' }, getTranslation(language, 'personalInfo')),
+                            React.createElement('div', { className: 'grid gap-4' },
+                                React.createElement('div', null,
+                                    React.createElement('label', null, getTranslation(language, 'fullName')),
+                                    React.createElement('input', {
+                                        type: 'text',
+                                        className: 'input mt-1',
+                                        value: cvData.personalInfo.fullName,
+                                        onChange: (e) => updatePersonalInfo('fullName', e.target.value)
+                                    })
+                                ),
+                                React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
+                                    React.createElement('div', null,
+                                        React.createElement('label', null, getTranslation(language, 'email')),
+                                        React.createElement('input', {
+                                            type: 'email',
+                                            className: 'input mt-1',
+                                            value: cvData.personalInfo.email,
+                                            onChange: (e) => updatePersonalInfo('email', e.target.value)
+                                        })
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('label', null, getTranslation(language, 'phone')),
+                                        React.createElement('input', {
+                                            type: 'tel',
+                                            className: 'input mt-1',
+                                            value: cvData.personalInfo.phone,
+                                            onChange: (e) => updatePersonalInfo('phone', e.target.value)
+                                        })
+                                    )
+                                ),
+                                React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
+                                    React.createElement('div', null,
+                                        React.createElement('label', null,
+                                            getTranslation(language, 'dateOfBirth'),
+                                            ' ',
+                                            React.createElement('span', { className: 'text-muted text-xs' }, getTranslation(language, 'optional'))
+                                        ),
+                                        React.createElement('input', {
+                                            type: 'date',
+                                            className: 'input mt-1',
+                                            value: cvData.personalInfo.dateOfBirth,
+                                            onChange: (e) => updatePersonalInfo('dateOfBirth', e.target.value)
+                                        })
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('label', null,
+                                            getTranslation(language, 'nationality'),
+                                            ' ',
+                                            React.createElement('span', { className: 'text-muted text-xs' }, getTranslation(language, 'optional'))
+                                        ),
+                                        React.createElement('input', {
+                                            type: 'text',
+                                            className: 'input mt-1',
+                                            value: cvData.personalInfo.nationality,
+                                            onChange: (e) => updatePersonalInfo('nationality', e.target.value),
+                                            placeholder: 'e.g., Rwandan'
+                                        })
+                                    )
+                                ),
+                                React.createElement('div', null,
+                                    React.createElement('label', null, getTranslation(language, 'address')),
+                                    React.createElement('input', {
+                                        type: 'text',
+                                        className: 'input mt-1',
+                                        value: cvData.personalInfo.address,
+                                        onChange: (e) => updatePersonalInfo('address', e.target.value)
+                                    })
+                                ),
+                                React.createElement('div', null,
+                                    React.createElement('label', null, getTranslation(language, 'summary')),
+                                    React.createElement('textarea', {
+                                        className: 'textarea mt-1',
+                                        style: { minHeight: '120px' },
+                                        value: cvData.personalInfo.summary,
+                                        onChange: (e) => updatePersonalInfo('summary', e.target.value)
+                                    })
+                                )
+                            )
+                        ),
+
+                        // Download buttons
+                        React.createElement('div', { className: 'flex gap-4 justify-center py-8' },
+                            React.createElement('button', {
+                                className: 'btn btn-outline btn-lg',
+                                onClick: () => setShowPreview(true)
+                            },
+                                React.createElement(Icon, { name: 'Eye', size: 20 }),
+                                getTranslation(language, 'previewCV')
+                            ),
+                            React.createElement('button', {
+                                className: 'btn btn-gradient btn-lg',
+                                onClick: handleDownloadPDF
+                            },
+                                React.createElement(Icon, { name: 'Download', size: 20 }),
+                                getTranslation(language, 'downloadPDF')
+                            )
+                        )
+                    )
+                ),
+
+                // Hidden CV Preview
+                React.createElement('div', { style: { position: 'fixed', left: '-9999px', top: '-9999px' } },
+                    React.createElement('div', {
+                        id: 'cv-preview',
+                        style: {
+                            backgroundColor: '#ffffff',
+                            color: '#000',
+                            padding: '2rem',
+                            maxWidth: '56rem',
+                            margin: '0 auto',
+                            minHeight: '100vh'
+                        }
+                    },
+                        React.createElement('div', { style: { borderBottom: '4px solid #00A1DE', paddingBottom: '1rem', marginBottom: '1.5rem' } },
+                            React.createElement('h1', { style: { fontSize: '2.5rem', fontWeight: 700, color: '#000', marginBottom: '0.5rem' } },
+                                cvData.personalInfo.fullName || 'Your Name'
+                            ),
+                            cvData.personalInfo.email && React.createElement('div', { style: { fontSize: '0.875rem', color: '#333', marginTop: '0.5rem' } },
+                                '📧 ', cvData.personalInfo.email
+                            ),
+                            cvData.personalInfo.phone && React.createElement('div', { style: { fontSize: '0.875rem', color: '#333', marginTop: '0.25rem' } },
+                                '📱 ', cvData.personalInfo.phone
+                            ),
+                            cvData.personalInfo.address && React.createElement('div', { style: { fontSize: '0.875rem', color: '#333', marginTop: '0.25rem' } },
+                                '📍 ', cvData.personalInfo.address
+                            )
+                        ),
+                        cvData.personalInfo.summary && React.createElement('div', { style: { marginBottom: '1.5rem' } },
+                            React.createElement('h2', { style: { fontSize: '1.5rem', fontWeight: 600, color: '#000', borderBottom: '2px solid #FAD201', paddingBottom: '0.25rem', marginBottom: '0.5rem' } },
+                                'Professional Summary'
+                            ),
+                            React.createElement('p', { style: { fontSize: '0.875rem', color: '#333', lineHeight: 1.6 } },
+                                cvData.personalInfo.summary
+                            )
+                        )
+                    )
+                ),
+
+                // Modal Preview
+                showPreview && React.createElement('div', {
+                    className: 'modal-overlay',
+                    onClick: () => setShowPreview(false)
+                },
+                    React.createElement('div', {
+                        className: 'modal-content',
+                        onClick: (e) => e.stopPropagation()
+                    },
+                        React.createElement('div', { style: { padding: '2rem', maxHeight: '90vh', overflowY: 'auto' } },
+                            React.createElement('h1', { style: { fontSize: '2rem', marginBottom: '1rem' } },
+                                cvData.personalInfo.fullName || 'Your CV Preview'
+                            ),
+                            React.createElement('button', {
+                                className: 'btn btn-primary',
+                                onClick: () => setShowPreview(false),
+                                style: { marginTop: '1rem' }
+                            }, 'Close')
+                        )
+                    )
+                )
+            );
+        }
+
+        // Render
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
